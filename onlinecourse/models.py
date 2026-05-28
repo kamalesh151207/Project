@@ -1,24 +1,31 @@
 from django.db import models
 
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
+class Course(models.Model):
+    name = models.CharField(max_length=200)
 
     def __str__(self):
-        return self.question_text
+        return self.name
 
+class Question(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    text = models.CharField(max_length=255)
+    grade = models.IntegerField(default=1)
+
+    def __str__(self):
+        return self.text
 
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=200)
+    text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.choice_text
-
+        return self.text
 
 class Submission(models.Model):
-    student_name = models.CharField(max_length=100)
+    user = models.CharField(max_length=100)
     score = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)
 
     def __str__(self):
-        return self.student_name
+        return self.user
