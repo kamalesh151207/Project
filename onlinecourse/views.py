@@ -3,8 +3,16 @@ from .models import Course, Question, Choice, Submission
 
 def exam(request):
     course = Course.objects.first()
+
+    if not course:
+        return render(request, "exam.html", {"questions": []})
+
     questions = Question.objects.filter(course=course)
-    return render(request, "exam.html", {"questions": questions})
+
+    return render(request, "exam.html", {
+        "questions": questions,
+        "course": course
+    })
 
 
 def submit(request):
@@ -12,16 +20,20 @@ def submit(request):
         score = 0
         total = 0
 
-        questions = Question.objects.all()
+        course = Course.objects.first()
+        questions = Question.objects.filter(course=course)
 
         for q in questions:
             total += 1
             selected = request.POST.get(str(q.id))
 
             if selected:
-                choice = Choice.objects.get(id=selected)
-                if choice.is_correct:
-                    score += 1
+                try:
+                    choice = Choice.objects.get(id=selected)
+                    if choice.is_correct:
+                        score += 1
+                except Choice.DoesNotExist:
+                    pass
 
         submission = Submission.objects.create(
             user="student",
@@ -31,7 +43,8 @@ def submit(request):
 
         return render(request, "result.html", {
             "score": score,
-            "total": total
+            "total": total,
+            "submission": submission
         })
 
 
